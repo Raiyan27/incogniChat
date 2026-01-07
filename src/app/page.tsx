@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUsername } from "@/hooks/use-username";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 const Page = () => {
   return (
@@ -19,8 +19,14 @@ const Lobby = () => {
   const router = useRouter();
 
   const searchParams = useSearchParams();
-  const wasDestroyed = searchParams.get("destroyed");
-  const error = searchParams.get("error");
+  const [wasDestroyed] = useState(searchParams.get("destroyed"));
+  const [error] = useState(searchParams.get("error"));
+
+  useEffect(() => {
+    if (searchParams.toString()) {
+      router.replace("/");
+    }
+  }, [searchParams, router]);
 
   const { mutate: createRoom } = useMutation({
     mutationFn: async () => {
