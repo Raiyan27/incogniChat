@@ -6,6 +6,7 @@ import { useRealtime } from "@/lib/realtime-client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { EmojiPicker } from "@/components/emoji-picker";
 
 const formatTimeRemaining = (seconds: number) => {
   const mins = Math.floor(seconds / 60)
@@ -186,12 +187,13 @@ const Page = () => {
       </div>
 
       <div className="p-4 border-t border-zinc-800 bg-zinc-900/30">
-        <div className="flex gap-4">
+        <div className="flex gap-2">
           <div className="flex-1 relative group">
             <span className="absolute left-4 top-1/2 -translate-1/2 text-green-500 animate-pulse">
               {">"}
             </span>
             <input
+              ref={inputRef}
               autoFocus
               value={inputMessage}
               onKeyDown={(e) => {
@@ -207,6 +209,13 @@ const Page = () => {
               className="w-full bg-black border border-zinc-800 focus:border-zinc-700 focus:outline-none transition-colors placeholder:text-zinc-700 py-3 pl-8 pr-4 text-sm"
             />
           </div>
+          <EmojiPicker
+            onEmojiSelect={(emoji) => {
+              setInputMessage((prev) => prev + emoji);
+              inputRef.current?.focus();
+            }}
+            buttonClassName="bg-zinc-800 px-3 h-full text-zinc-400 cursor-pointer"
+          />
           <button
             onClick={() => {
               sendMessage({ text: inputMessage });
