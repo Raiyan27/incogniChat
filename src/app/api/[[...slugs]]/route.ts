@@ -169,7 +169,31 @@ const messages = new Elysia({ prefix: "messages" })
     }
   );
 
-const app = new Elysia({ prefix: "/api" }).use(rooms).use(messages);
+const typing = new Elysia({ prefix: "/typing" }).use(authMiddleware).post(
+  "/",
+  async ({ body, auth }) => {
+    const { username, isTyping } = body;
+    const { roomId } = auth;
+
+    await realtime.channel(roomId).emit("chat.typing", {
+      username,
+      isTyping,
+    });
+
+    return { success: true };
+  },
+  {
+    query: z.object({
+      roomId: z.string(),
+    }),
+    body: z.object({
+      username: z.string(),
+      isTyping: z.boolean(),
+    }),
+  }
+);
+
+const app = new Elysia({ prefix: "/api" }).use(rooms).use(messages).use(typing);
 
 export const GET = app.fetch;
 export const POST = app.fetch;

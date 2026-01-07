@@ -28,6 +28,10 @@ const schema = {
       emoji: z.string(),
       username: z.string(),
     }),
+    typing: z.object({
+      username: z.string(),
+      isTyping: z.boolean(),
+    }),
   },
 };
 

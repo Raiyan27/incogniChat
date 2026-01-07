@@ -8,6 +8,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { EmojiPicker } from "@/components/emoji-picker";
 import { MessageItem } from "@/components/message-item";
+import { useTypingIndicator } from "@/hooks/use-typing-indicator";
+import { TypingIndicatorList } from "@/components/typing-indicator";
 
 const formatTimeRemaining = (seconds: number) => {
   const mins = Math.floor(seconds / 60)
@@ -25,7 +27,14 @@ const Page = () => {
   const [copyStatus, setCopyStatus] = useState("COPY");
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [inputMessage, setInputMessage] = useState("");
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const { handleTyping, handleStopTyping } = useTypingIndicator({
+    roomId,
+    username,
+  });
 
   const { data: ttlData } = useQuery({
     queryKey: ["ttl", roomId],
@@ -86,6 +95,7 @@ const Page = () => {
         { query: { roomId } }
       );
       setInputMessage("");
+      handleStopTyping();
     },
   });
 
@@ -106,13 +116,27 @@ const Page = () => {
 
   useRealtime({
     channels: [roomId],
-    events: ["chat.message", "chat.destroy", "chat.reaction"],
-    onData: ({ event }) => {
+    events: ["chat.message", "chat.destroy", "chat.reaction", "chat.typing"],
+    onData: ({ event, data }) => {
       if (event === "chat.message" || event === "chat.reaction") {
         refetch();
       }
       if (event === "chat.destroy") {
         router.push("/?destroyed=true");
+      }
+      if (event === "chat.typing") {
+        const typingData = data as { username: string; isTyping: boolean };
+        setTypingUsers((prev) => {
+          if (typingData.isTyping) {
+            // Add user if not already in list
+            return prev.includes(typingData.username)
+              ? prev
+              : [...prev, typingData.username];
+          } else {
+            // Remove user from list
+            return prev.filter((u) => u !== typingData.username);
+          }
+        });
       }
     },
   });
@@ -123,6 +147,14 @@ const Page = () => {
     setCopyStatus("COPIED!");
     setTimeout(() => setCopyStatus("COPY"), 2000);
   };
+
+  // Auto-scroll to bottom when messages or typing users change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages?.messages.length, typingUsers.length]);
+
   return (
     <main className="flex flex-col h-screen max-h-screen overflow-hidden">
       <header className="border-b border-zinc-800 p-4 flex items-center justify-between bg-zinc-900/30">
@@ -169,6 +201,32 @@ const Page = () => {
       </header>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-thin">
+        {messages?.messages.length === 0 ? (
+          <div className="space-y-4">
+            <TypingIndicatorList
+              typingUsers={typingUsers}
+              currentUsername={username}
+            />
+          </div>
+        ) : (
+          <>
+            {messages?.messages.map((msg) => (
+              <MessageItem
+                key={msg.id}
+                message={msg}
+                username={username}
+                onReact={(emoji) => addReaction({ messageId: msg.id, emoji })}
+              />
+            ))}
+
+            <TypingIndicatorList
+              typingUsers={typingUsers}
+              currentUsername={username}
+            />
+
+            <div ref={messagesEndRef} />
+          </>
+        )}
         {messages?.messages.length === 0 && (
           <div className="flex items-center justify-center h-full">
             <p className="text-zinc-600 text-sm font-mono">
@@ -176,15 +234,6 @@ const Page = () => {
             </p>
           </div>
         )}
-
-        {messages?.messages.map((msg) => (
-          <MessageItem
-            key={msg.id}
-            message={msg}
-            username={username}
-            onReact={(emoji) => addReaction({ messageId: msg.id, emoji })}
-          />
-        ))}
       </div>
 
       <div className="p-4 border-t border-zinc-800 bg-zinc-900/30">
@@ -200,12 +249,14 @@ const Page = () => {
               onKeyDown={(e) => {
                 if (e.key === "Enter" && inputMessage.trim()) {
                   sendMessage({ text: inputMessage });
-                  setInputMessage("");
                   inputRef.current?.focus();
                 }
               }}
               placeholder="Type message..."
-              onChange={(e) => setInputMessage(e.target.value)}
+              onChange={(e) => {
+                setInputMessage(e.target.value);
+                handleTyping();
+              }}
               type="text"
               className="w-full bg-black border border-zinc-800 focus:border-zinc-700 focus:outline-none transition-colors placeholder:text-zinc-700 py-3 pl-8 pr-4 text-sm"
             />
