@@ -1,38 +1,26 @@
 "use client";
-import { useEffect, useState } from "react";
 
-import { nanoid } from "nanoid";
 import { useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useUsername } from "@/hooks/use-username";
+import { Suspense } from "react";
 
-const generateUserName = () => {
-  const ADJECTIVES = ["Swift", "Silent", "Clever", "Brave", "Mighty"];
-  const ANIMALS = ["Lion", "Eagle", "Shark", "Wolf", "Tiger"];
-
-  const adjective = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
-  const animal = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
-
-  return `${adjective}-${animal}-${nanoid(4)}`;
+const Page = () => {
+  return (
+    <Suspense>
+      <Lobby />
+    </Suspense>
+  );
 };
 
-export default function Home() {
-  const [username, setUsername] = useState("");
+const Lobby = () => {
+  const username = useUsername();
   const router = useRouter();
 
-  useEffect(() => {
-    const main = () => {
-      const storedName = localStorage.getItem("username");
-      if (storedName) {
-        setUsername(storedName);
-      } else {
-        const newName = generateUserName();
-        localStorage.setItem("username", newName);
-        setUsername(newName);
-      }
-    };
-    main();
-  }, []);
+  const searchParams = useSearchParams();
+  const wasDestroyed = searchParams.get("destroyed");
+  const error = searchParams.get("error");
 
   const { mutate: createRoom } = useMutation({
     mutationFn: async () => {
@@ -49,6 +37,33 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">
+        {wasDestroyed && (
+          <div className="bg-red-950/50 border border-red-900 p-4 text-center">
+            <p className="text-red-500 text-sm font-bold">
+              The chat room has been destroyed.
+            </p>
+            <p className="text-zinc-500 text-xs mt-1">
+              All chat messages have been deleted.
+            </p>
+          </div>
+        )}
+        {error === "room_not_found" && (
+          <div className="bg-red-950/50 border border-red-900 p-4 text-center">
+            <p className="text-red-500 text-sm font-bold">Room not found.</p>
+            <p className="text-zinc-500 text-xs mt-1">
+              Room may have expired or does not exist.
+            </p>
+          </div>
+        )}
+        {error === "room_full" && (
+          <div className="bg-red-950/50 border border-red-900 p-4 text-center">
+            <p className="text-red-500 text-sm font-bold">ROOM FULL</p>
+            <p className="text-zinc-500 text-xs mt-1">
+              Room is at maximum capacity. Please try another room.
+            </p>
+          </div>
+        )}
+
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold text-amber-600">
             {"> "}welcome to incogniChat
@@ -83,4 +98,5 @@ export default function Home() {
       </div>
     </main>
   );
-}
+};
+export default Page;

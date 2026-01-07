@@ -19,6 +19,16 @@ export const proxy = async (req: NextRequest) => {
     return NextResponse.redirect(new URL("/?error=room_not_found", req.url));
   }
 
+  const existingTokens = req.cookies.get("x-auth-token")?.value;
+
+  if (existingTokens && meta.connected.includes(existingTokens)) {
+    return NextResponse.next();
+  }
+
+  if (meta.connected.length >= 2) {
+    return NextResponse.redirect(new URL("/?error=room_full", req.url));
+  }
+
   const response = NextResponse.next();
 
   const token = nanoid();
