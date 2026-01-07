@@ -2,7 +2,7 @@ import { redis } from "@/lib/redis";
 import { Elysia } from "elysia";
 import { nanoid } from "nanoid";
 import { authMiddleware } from "./auth";
-import z, { nan } from "zod";
+import z from "zod";
 import { Message, realtime } from "@/lib/realtime";
 
 const ROOM_TTL_SECONDS = 60 * 20; // 20 mins
@@ -65,6 +65,7 @@ const messages = new Elysia({ prefix: "messages" })
         text,
         timestamp: Date.now(),
         roomId,
+        reactions: [],
       };
 
       await redis.rpush(`messages:${roomId}`, {
@@ -110,6 +111,60 @@ const messages = new Elysia({ prefix: "messages" })
     {
       query: z.object({
         roomId: z.string(),
+      }),
+    }
+  )
+  .post(
+    "/react",
+    async ({ body, auth }) => {
+      const { messageId, emoji, username } = body;
+      const { roomId } = auth;
+
+      const messages = await redis.lrange<Message>(`messages:${roomId}`, 0, -1);
+
+      const messageIndex = messages.findIndex((m) => m.id === messageId);
+      if (messageIndex === -1) {
+        throw new Error("Message not found");
+      }
+
+      const message = messages[messageIndex];
+      const reactions = message.reactions || [];
+
+      const existingReaction = reactions.find((r) => r.emoji === emoji);
+
+      if (existingReaction) {
+        if (existingReaction.users.includes(username)) {
+          existingReaction.users = existingReaction.users.filter(
+            (u) => u !== username
+          );
+          if (existingReaction.users.length === 0) {
+            message.reactions = reactions.filter((r) => r.emoji !== emoji);
+          }
+        } else {
+          existingReaction.users.push(username);
+        }
+      } else {
+        reactions.push({ emoji, users: [username] });
+        message.reactions = reactions;
+      }
+
+      await redis.lset(`messages:${roomId}`, messageIndex, message);
+      await realtime.channel(roomId).emit("chat.reaction", {
+        messageId,
+        emoji,
+        username,
+      });
+
+      return { success: true };
+    },
+    {
+      query: z.object({
+        roomId: z.string(),
+      }),
+      body: z.object({
+        messageId: z.string(),
+        emoji: z.string(),
+        username: z.string(),
       }),
     }
   );

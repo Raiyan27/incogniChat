@@ -7,6 +7,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { EmojiPicker } from "@/components/emoji-picker";
+import { MessageItem } from "@/components/message-item";
 
 const formatTimeRemaining = (seconds: number) => {
   const mins = Math.floor(seconds / 60)
@@ -88,11 +89,26 @@ const Page = () => {
     },
   });
 
+  const { mutate: addReaction } = useMutation({
+    mutationFn: async ({
+      messageId,
+      emoji,
+    }: {
+      messageId: string;
+      emoji: string;
+    }) => {
+      await api.messages.react.post(
+        { messageId, emoji, username },
+        { query: { roomId } }
+      );
+    },
+  });
+
   useRealtime({
     channels: [roomId],
-    events: ["chat.message", "chat.destroy"],
+    events: ["chat.message", "chat.destroy", "chat.reaction"],
     onData: ({ event }) => {
-      if (event === "chat.message") {
+      if (event === "chat.message" || event === "chat.reaction") {
         refetch();
       }
       if (event === "chat.destroy") {
@@ -152,7 +168,7 @@ const Page = () => {
         </button>
       </header>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin">
+      <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-thin">
         {messages?.messages.length === 0 && (
           <div className="flex items-center justify-center h-full">
             <p className="text-zinc-600 text-sm font-mono">
@@ -162,27 +178,12 @@ const Page = () => {
         )}
 
         {messages?.messages.map((msg) => (
-          <div key={msg.id} className="flex flex-col items-start">
-            <div className="max-w-[80%] group">
-              <div className="flex items-baseline gap-3 mb-1">
-                <span
-                  className={`text-xs font-bold ${
-                    msg.sender === username ? "text-green-500" : "text-blue-500"
-                  }`}
-                >
-                  {msg.sender === username ? "You" : msg.sender}
-                </span>
-
-                <span className="text-[10px] text-zinc-600">
-                  {new Date(msg.timestamp).toLocaleTimeString()}
-                </span>
-              </div>
-
-              <p className="text-sm text-zinc-300 leading-relaxed break-all">
-                {msg.text}
-              </p>
-            </div>
-          </div>
+          <MessageItem
+            key={msg.id}
+            message={msg}
+            username={username}
+            onReact={(emoji) => addReaction({ messageId: msg.id, emoji })}
+          />
         ))}
       </div>
 
