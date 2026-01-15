@@ -66,6 +66,7 @@ const messages = new Elysia({ prefix: "messages" })
         timestamp: Date.now(),
         roomId,
         reactions: [],
+        readBy: [],
       };
 
       await redis.rpush(`messages:${roomId}`, {
@@ -193,7 +194,51 @@ const typing = new Elysia({ prefix: "/typing" }).use(authMiddleware).post(
   }
 );
 
-const app = new Elysia({ prefix: "/api" }).use(rooms).use(messages).use(typing);
+const read = new Elysia({ prefix: "/read" }).use(authMiddleware).post(
+  "/",
+  async ({ body, auth }) => {
+    const { messageId, username } = body;
+    const { roomId } = auth;
+
+    const messages = await redis.lrange<Message>(`messages:${roomId}`, 0, -1);
+
+    const messageIndex = messages.findIndex((m) => m.id === messageId);
+    if (messageIndex === -1) {
+      throw new Error("Message not found");
+    }
+
+    const message = messages[messageIndex];
+    const readBy = message.readBy || [];
+
+    if (!readBy.includes(username)) {
+      readBy.push(username);
+      message.readBy = readBy;
+
+      await redis.lset(`messages:${roomId}`, messageIndex, message);
+      await realtime.channel(roomId).emit("chat.read", {
+        messageId,
+        username,
+      });
+    }
+
+    return { success: true };
+  },
+  {
+    query: z.object({
+      roomId: z.string(),
+    }),
+    body: z.object({
+      messageId: z.string(),
+      username: z.string(),
+    }),
+  }
+);
+
+const app = new Elysia({ prefix: "/api" })
+  .use(rooms)
+  .use(messages)
+  .use(typing)
+  .use(read);
 
 export const GET = app.fetch;
 export const POST = app.fetch;

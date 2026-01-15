@@ -15,6 +15,7 @@ const message = z.object({
   roomId: z.string(),
   token: z.string().optional(),
   reactions: z.array(reaction).optional(),
+  readBy: z.array(z.string()).optional(),
 });
 
 const schema = {
@@ -31,6 +32,10 @@ const schema = {
     typing: z.object({
       username: z.string(),
       isTyping: z.boolean(),
+    }),
+    read: z.object({
+      messageId: z.string(),
+      username: z.string(),
     }),
   },
 };

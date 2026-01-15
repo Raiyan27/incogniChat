@@ -114,11 +114,27 @@ const Page = () => {
     },
   });
 
+  const { mutate: markAsRead } = useMutation({
+    mutationFn: async ({ messageId }: { messageId: string }) => {
+      await api.read.post({ messageId, username }, { query: { roomId } });
+    },
+  });
+
   useRealtime({
     channels: [roomId],
-    events: ["chat.message", "chat.destroy", "chat.reaction", "chat.typing"],
+    events: [
+      "chat.message",
+      "chat.destroy",
+      "chat.reaction",
+      "chat.typing",
+      "chat.read",
+    ],
     onData: ({ event, data }) => {
-      if (event === "chat.message" || event === "chat.reaction") {
+      if (
+        event === "chat.message" ||
+        event === "chat.reaction" ||
+        event === "chat.read"
+      ) {
         refetch();
       }
       if (event === "chat.destroy") {
@@ -204,7 +220,7 @@ const Page = () => {
         </button>
       </header>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-thin">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin bg-zinc-950/30">
         {messages?.messages.length === 0 ? (
           <div className="space-y-4">
             <TypingIndicatorList
@@ -214,14 +230,22 @@ const Page = () => {
           </div>
         ) : (
           <>
-            {messages?.messages.map((msg) => (
-              <MessageItem
-                key={msg.id}
-                message={msg}
-                username={username}
-                onReact={(emoji) => addReaction({ messageId: msg.id, emoji })}
-              />
-            ))}
+            {messages?.messages.map((msg, index) => {
+              const isLatestOwnMessage =
+                msg.sender === username &&
+                index === messages.messages.length - 1;
+
+              return (
+                <MessageItem
+                  key={msg.id}
+                  message={msg}
+                  username={username}
+                  onReact={(emoji) => addReaction({ messageId: msg.id, emoji })}
+                  onMarkAsRead={(messageId) => markAsRead({ messageId })}
+                  isLatestOwnMessage={isLatestOwnMessage}
+                />
+              );
+            })}
 
             <TypingIndicatorList
               typingUsers={typingUsers}
