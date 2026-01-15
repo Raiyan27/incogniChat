@@ -107,7 +107,7 @@ const Lobby = () => {
                   onChange={(e) => setMaxUsers(Number(e.target.value))}
                   className="flex-1 h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-amber-500 touch-manipulation"
                 />
-                <span className="min-w-[3rem] text-center bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-amber-500 font-mono font-bold">
+                <span className="min-w-12 text-center bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-amber-500 font-mono font-bold">
                   {maxUsers}
                 </span>
               </div>
