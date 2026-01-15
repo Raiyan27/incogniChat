@@ -350,6 +350,7 @@ Create `.env.local`:
 ```env
 UPSTASH_REDIS_REST_URL=your_redis_url
 UPSTASH_REDIS_REST_TOKEN=your_redis_token
+NEXT_PUBLIC_API_URL=http://localhost:3000
 ```
 
 ### 3. Run Development Server
