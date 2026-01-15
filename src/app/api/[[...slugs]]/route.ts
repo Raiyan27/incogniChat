@@ -8,23 +8,44 @@ import { Message, realtime } from "@/lib/realtime";
 const ROOM_TTL_SECONDS = 60 * 20; // 20 mins
 
 const rooms = new Elysia({ prefix: "/room" })
-  .post("/create", async () => {
-    const roomId = nanoid();
-    await redis.hset(`meta:${roomId}`, {
-      connected: [],
-      createdAt: Date.now(),
-    });
+  .post(
+    "/create",
+    async ({ body }) => {
+      const roomId = nanoid();
+      const maxUsers = Math.min(10, Math.max(2, body.maxUsers || 5));
 
-    await redis.expire(`meta:${roomId}`, ROOM_TTL_SECONDS);
+      await redis.hset(`meta:${roomId}`, {
+        connected: [],
+        createdAt: Date.now(),
+        maxUsers,
+      });
 
-    return { roomId };
-  })
+      await redis.expire(`meta:${roomId}`, ROOM_TTL_SECONDS);
+
+      return { roomId };
+    },
+    {
+      body: z.object({
+        maxUsers: z.number().min(2).max(10).optional(),
+      }),
+    }
+  )
   .use(authMiddleware)
   .get(
     "/ttl",
     async ({ auth }) => {
       const ttl = await redis.ttl(`meta:${auth.roomId}`);
       return { ttl: ttl > 0 ? ttl : 0 };
+    },
+    { query: z.object({ roomId: z.string() }) }
+  )
+  .get(
+    "/info",
+    async ({ auth }) => {
+      return {
+        connectedCount: auth.connected.length,
+        maxUsers: auth.maxUsers,
+      };
     },
     { query: z.object({ roomId: z.string() }) }
   )

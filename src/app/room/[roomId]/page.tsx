@@ -46,6 +46,16 @@ const Page = () => {
     },
   });
 
+  const { data: roomInfo } = useQuery({
+    queryKey: ["roomInfo", roomId],
+    queryFn: async () => {
+      const res = await api.room.info.get({
+        query: { roomId },
+      });
+      return res.data;
+    },
+  });
+
   useEffect(() => {
     if (ttlData?.ttl !== undefined) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -209,6 +219,16 @@ const Page = () => {
                 : "--:--"}
             </span>
           </div>
+
+          <div className="h-6 md:h-8 w-px bg-zinc-800" />
+          <div className="flex flex-col">
+            <span className="text-[10px] md:text-xs text-zinc-500 uppercase">
+              Capacity
+            </span>
+            <span className="text-xs md:text-sm font-bold text-purple-400">
+              {roomInfo?.connectedCount ?? "-"}/{roomInfo?.maxUsers ?? "-"}
+            </span>
+          </div>
         </div>
 
         <button
@@ -243,6 +263,7 @@ const Page = () => {
                   onReact={(emoji) => addReaction({ messageId: msg.id, emoji })}
                   onMarkAsRead={(messageId) => markAsRead({ messageId })}
                   isLatestOwnMessage={isLatestOwnMessage}
+                  maxUsers={roomInfo?.maxUsers ?? 2}
                 />
               );
             })}

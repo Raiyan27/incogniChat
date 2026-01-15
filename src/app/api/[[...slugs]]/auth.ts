@@ -8,14 +8,25 @@ class AuthError extends Error {
   }
 }
 
+class RoomFullError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "RoomFullError";
+  }
+}
+
 export const authMiddleware = new Elysia({
   name: "auth",
 })
-  .error({ AuthError })
+  .error({ AuthError, RoomFullError })
   .onError(({ code, set }) => {
     if (code === "AuthError") {
       set.status = 401;
       return { error: "Unauthorized" };
+    }
+    if (code === "RoomFullError") {
+      set.status = 403;
+      return { error: "Room is full" };
     }
   })
   .derive({ as: "scoped" }, async ({ query, cookie }) => {
@@ -26,11 +37,21 @@ export const authMiddleware = new Elysia({
       throw new AuthError("Missing roomId or token");
     }
 
-    const connected = await redis.hget<string[]>(`meta:${roomId}`, "connected");
+    const meta = await redis.hgetall<{
+      connected: string[];
+      maxUsers?: number;
+    }>(`meta:${roomId}`);
+    const connected = meta?.connected || [];
+    const maxUsers = meta?.maxUsers || 5;
 
-    if (!connected?.includes(token)) {
+    // Check if user is already connected
+    if (!connected.includes(token)) {
+      // Check if room is full before allowing new connection
+      if (connected.length >= maxUsers) {
+        throw new RoomFullError("Room is at maximum capacity");
+      }
       throw new AuthError("Invalid token for room");
     }
 
-    return { auth: { roomId, token, connected } };
+    return { auth: { roomId, token, connected, maxUsers } };
   });

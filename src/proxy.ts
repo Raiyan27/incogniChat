@@ -11,21 +11,24 @@ export const proxy = async (req: NextRequest) => {
   }
   const roomId = roomMatch[1];
 
-  const meta = await redis.hgetall<{ connected: string[]; createdAt: number }>(
-    `meta:${roomId}`
-  );
+  const meta = await redis.hgetall<{
+    connected: string[];
+    createdAt: number;
+    maxUsers?: number;
+  }>(`meta:${roomId}`);
 
   if (!meta) {
     return NextResponse.redirect(new URL("/?error=room_not_found", req.url));
   }
 
+  const maxUsers = meta.maxUsers || 5;
   const existingTokens = req.cookies.get("x-auth-token")?.value;
 
   if (existingTokens && meta.connected.includes(existingTokens)) {
     return NextResponse.next();
   }
 
-  if (meta.connected.length >= 2) {
+  if (meta.connected.length >= maxUsers) {
     return NextResponse.redirect(new URL("/?error=room_full", req.url));
   }
 

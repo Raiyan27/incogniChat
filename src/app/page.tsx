@@ -21,6 +21,7 @@ const Lobby = () => {
   const searchParams = useSearchParams();
   const [wasDestroyed] = useState(searchParams.get("destroyed"));
   const [error] = useState(searchParams.get("error"));
+  const [maxUsers, setMaxUsers] = useState(5);
 
   useEffect(() => {
     if (searchParams.toString()) {
@@ -30,7 +31,7 @@ const Lobby = () => {
 
   const { mutate: createRoom } = useMutation({
     mutationFn: async () => {
-      const res = await api.room.create.post();
+      const res = await api.room.create.post({ maxUsers });
 
       if (res.status === 200) {
         router.push(`/room/${res.data?.roomId}`);
@@ -93,9 +94,33 @@ const Lobby = () => {
               </div>
             </div>
 
+            <div className="space-y-2">
+              <label className="flex items-center text-zinc-500">
+                Max Participants
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="range"
+                  min={2}
+                  max={10}
+                  value={maxUsers}
+                  onChange={(e) => setMaxUsers(Number(e.target.value))}
+                  className="flex-1 h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-amber-500 touch-manipulation"
+                />
+                <span className="min-w-[3rem] text-center bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-amber-500 font-mono font-bold">
+                  {maxUsers}
+                </span>
+              </div>
+              <p className="text-zinc-600 text-xs">
+                {maxUsers === 2
+                  ? "Private 1-on-1 chat"
+                  : `Up to ${maxUsers} people can join`}
+              </p>
+            </div>
+
             <button
               onClick={() => createRoom()}
-              className="w-full bg-zinc-100 text-black p-3 text-sm font-bold hover:bg-zinc-50 hover:text-black transition-colors mt-2 cursor-pointer disabled:opacity-50"
+              className="w-full bg-zinc-100 text-black p-3 text-sm font-bold hover:bg-zinc-50 hover:text-black transition-colors mt-2 cursor-pointer disabled:opacity-50 touch-manipulation active:scale-[0.98]"
             >
               Create Secure Room
             </button>

@@ -142,7 +142,7 @@ export const MessageReactions = ({
               .map((user) =>
                 user === currentUsername ? `${user} (you)` : user
               )
-              .join(", ");
+              .join("\n");
 
             return (
               <button
