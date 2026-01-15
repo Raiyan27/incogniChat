@@ -157,28 +157,32 @@ const Page = () => {
 
   return (
     <main className="flex flex-col h-screen max-h-screen overflow-hidden">
-      <header className="border-b border-zinc-800 p-4 flex items-center justify-between bg-zinc-900/30">
-        <div className="flex items-center gap-4">
+      <header className="border-b border-zinc-800 p-3 md:p-4 flex flex-col md:flex-row items-start md:items-center justify-between bg-zinc-900/30 gap-3 md:gap-0">
+        <div className="flex items-center justify-between gap-2 md:gap-4 flex-wrap w-full md:w-auto">
           <div className="flex flex-col">
-            <span className="text-xs text-zinc-500 uppercase">ROOM ID</span>
+            <span className="text-[10px] md:text-xs text-zinc-500 uppercase">
+              ROOM ID
+            </span>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-green-500">{roomId}</span>
+              <span className="font-bold text-green-500 text-xs md:text-base truncate max-w-30 sm:max-w-none">
+                {roomId}
+              </span>
               <button
                 onClick={copyLink}
-                className="text-[10px] bg-zinc-800 hover:bg-zinc-700 px-2 py-0.5 rounded text-zinc-400 hover:text-zinc-200 transition-colors"
+                className="text-[9px] md:text-[10px] bg-zinc-800 hover:bg-zinc-700 px-1.5 md:px-2 py-0.5 rounded text-zinc-400 hover:text-zinc-200 transition-colors whitespace-nowrap"
               >
                 {copyStatus}
               </button>
             </div>
           </div>
 
-          <div className="h-8 w-px bg-zinc-800" />
+          <div className="h-6 md:h-8 w-px bg-zinc-800" />
           <div className="flex flex-col">
-            <span className="text-xs text-zinc-500 uppercase">
+            <span className="text-[10px] md:text-xs text-zinc-500 uppercase">
               Self-Destruct
             </span>
             <span
-              className={`text-sm font-bold flex items-center gap-2 ${
+              className={`text-xs md:text-sm font-bold flex items-center gap-2 ${
                 timeRemaining !== null && timeRemaining < 60
                   ? "text-red-500"
                   : "text-amber-500"
@@ -193,7 +197,7 @@ const Page = () => {
 
         <button
           onClick={() => destroyRoom()}
-          className="text-xs bg-zinc-800 hover:bg-red-600 px-3 py-1.5 rounded text-zinc-400 hover:text-white font-bold transition-all group flex items-center gap-2 disabled:opacity-50"
+          className="text-[10px] md:text-xs bg-zinc-800 hover:bg-red-600 px-2.5 md:px-3 py-1 md:py-1.5 rounded text-zinc-400 hover:text-white font-bold transition-all group flex items-center gap-1.5 md:gap-2 disabled:opacity-50  md:w-auto justify-center ml-auto"
         >
           <span className="group-hover:animate-pulse">💣</span>
           DESTROY NOW

@@ -81,8 +81,8 @@ export const EmojiPicker = ({
       {isOpen && (
         <div
           className={`absolute z-50 ${
-            pickerPosition === "top" ? "bottom-12" : "top-12"
-          } right-0`}
+            pickerPosition === "top" ? "bottom-17" : "top-12"
+          } md:right-0 -right-15`}
         >
           <Picker
             onEmojiClick={handleEmojiClick}
@@ -92,8 +92,16 @@ export const EmojiPicker = ({
             previewConfig={{
               showPreview: true,
             }}
-            width={400}
             height={400}
+            width={
+              typeof window !== "undefined"
+                ? window.innerWidth >= 768
+                  ? 400
+                  : window.innerWidth >= 412
+                  ? 300
+                  : 300
+                : 300
+            }
           />
         </div>
       )}
