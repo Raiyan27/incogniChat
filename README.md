@@ -46,6 +46,7 @@ In an era of permanent digital footprints, sometimes conversations should just..
 - ⌨️ **Typing Indicators** – Facebook Messenger-style bouncing dots with throttling
 - 📱 **Mobile-First Design** – Touch-optimized interactions, long-press gestures, responsive layouts
 - 🌈 **Smart Color Coding** – Unique gradient colors per user (group chats only)
+- 🎮 **Cyberpunk 2077-Inspired UI** – Neon yellow accents, hexagonal elements, glitch effects, and futuristic aesthetics inspired by one of my favorite games
 
 ### Technical Excellence
 
@@ -139,6 +140,7 @@ Unlike most chat apps that "delete" messages by hiding them, incogniChat uses Re
 - **Long-Press Gestures** – 500ms touch detection for mobile reaction picker
 - **Color Hashing Algorithm** – Deterministic user colors in group chats (same user = same color)
 - **Conditional Rendering** – Different UI for 1-on-1 vs. group chats
+- **Cyberpunk 2077 Aesthetic** – Yellow (#fcee0a) primary accents, angular clip-path shapes, neon glows, scanline effects, and "//" comment-style labels. Built as a tribute to one of my all-time favorite games, bringing that dystopian-futuristic vibe to a modern web app.
 
 ### 3. **Real-World Scalability**
 

@@ -182,36 +182,42 @@ const Page = () => {
   }, [messages?.messages.length, typingUsers.length]);
 
   return (
-    <main className="flex flex-col h-screen max-h-screen overflow-hidden">
-      <header className="border-b border-zinc-800 p-3 md:p-4 flex flex-col md:flex-row items-start md:items-center justify-between bg-zinc-900/30 gap-3 md:gap-0">
+    <main className="flex flex-col h-screen max-h-screen overflow-hidden relative z-10">
+      <header className="cyber-panel border-b-2 border-yellow-500/40 p-3 md:p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-0 relative">
+        {/* Corner accents - CP2077 style */}
+        <div className="absolute top-0 left-0 w-3 h-3 border-l-2 border-t-2 border-yellow-400"></div>
+        <div className="absolute top-0 right-0 w-3 h-3 border-r-2 border-t-2 border-cyan-400"></div>
+        <div className="absolute bottom-0 left-0 w-2 h-2 border-l border-b border-cyan-400/50"></div>
+        <div className="absolute bottom-0 right-0 w-2 h-2 border-r border-b border-yellow-400/50"></div>
+
         <div className="flex items-center justify-between gap-2 md:gap-4 flex-wrap w-full md:w-auto">
           <div className="flex flex-col">
-            <span className="text-[10px] md:text-xs text-zinc-500 uppercase">
-              ROOM ID
+            <span className="text-[10px] md:text-xs text-yellow-400/80 uppercase font-mono tracking-widest">
+              {"//"} ROOM_ID
             </span>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-green-500 text-xs md:text-base truncate max-w-30 sm:max-w-none">
+              <span className="font-bold neon-text-yellow text-xs md:text-base truncate max-w-30 sm:max-w-none font-mono">
                 {roomId}
               </span>
               <button
                 onClick={copyLink}
-                className="text-[9px] md:text-[10px] bg-zinc-800 hover:bg-zinc-700 px-1.5 md:px-2 py-0.5 rounded text-zinc-400 hover:text-zinc-200 transition-colors whitespace-nowrap"
+                className="text-[9px] md:text-[10px] cyber-input hover:neon-border-yellow px-1.5 md:px-2 py-0.5 text-yellow-400 hover:text-yellow-300 transition-all whitespace-nowrap font-mono uppercase tracking-wide"
               >
                 {copyStatus}
               </button>
             </div>
           </div>
 
-          <div className="h-6 md:h-8 w-px bg-zinc-800" />
+          <div className="h-6 md:h-8 w-px bg-linear-to-b from-yellow-500/0 via-yellow-500/60 to-yellow-500/0" />
           <div className="flex flex-col">
-            <span className="text-[10px] md:text-xs text-zinc-500 uppercase">
-              Self-Destruct
+            <span className="text-[10px] md:text-xs text-yellow-400/80 uppercase font-mono tracking-widest">
+              {"//"} DESTRUCT_IN
             </span>
             <span
-              className={`text-xs md:text-sm font-bold flex items-center gap-2 ${
+              className={`text-xs md:text-sm font-bold flex items-center gap-2 font-mono ${
                 timeRemaining !== null && timeRemaining < 60
-                  ? "text-red-500"
-                  : "text-amber-500"
+                  ? "neon-text-red animate-pulse"
+                  : "neon-text-green"
               }`}
             >
               {timeRemaining !== null
@@ -220,12 +226,12 @@ const Page = () => {
             </span>
           </div>
 
-          <div className="h-6 md:h-8 w-px bg-zinc-800" />
+          <div className="h-6 md:h-8 w-px bg-linear-to-b from-yellow-500/0 via-yellow-500/60 to-yellow-500/0" />
           <div className="flex flex-col">
-            <span className="text-[10px] md:text-xs text-zinc-500 uppercase">
-              Capacity
+            <span className="text-[10px] md:text-xs text-yellow-400/80 uppercase font-mono tracking-widest">
+              {"//"} NODES
             </span>
-            <span className="text-xs md:text-sm font-bold text-purple-400">
+            <span className="text-xs md:text-sm font-bold text-cyan-400 font-mono">
               {roomInfo?.connectedCount ?? "-"}/{roomInfo?.maxUsers ?? "-"}
             </span>
           </div>
@@ -233,14 +239,18 @@ const Page = () => {
 
         <button
           onClick={() => destroyRoom()}
-          className="text-[10px] md:text-xs bg-zinc-800 hover:bg-red-600 px-2.5 md:px-3 py-1 md:py-1.5 rounded text-zinc-400 hover:text-white font-bold transition-all group flex items-center gap-1.5 md:gap-2 disabled:opacity-50  md:w-auto justify-center ml-auto"
+          className="text-[10px] md:text-xs cyber-button cyber-button-danger px-2.5 md:px-3 py-1 md:py-1.5 font-bold uppercase tracking-wider group flex items-center gap-1.5 md:gap-2 disabled:opacity-50 md:w-auto justify-center ml-auto font-mono"
         >
-          <span className="group-hover:animate-pulse">💣</span>
-          DESTROY NOW
+          <span className="group-hover:animate-pulse">⚠</span>
+          TERMINATE
         </button>
       </header>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin bg-zinc-950/30">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin relative">
+        {/* Subtle grid overlay with CP2077 yellow accent */}
+        <div className="absolute inset-0 bg-linear-to-b from-yellow-500/5 via-transparent to-yellow-500/5 pointer-events-none"></div>
+        <div className="absolute top-0 left-0 w-full h-px bg-linear-to-r from-transparent via-yellow-500/30 to-transparent"></div>
+
         {messages?.messages.length === 0 ? (
           <div className="space-y-4">
             <TypingIndicatorList
@@ -277,19 +287,25 @@ const Page = () => {
           </>
         )}
         {messages?.messages.length === 0 && (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-zinc-600 text-sm font-mono">
-              No messages yet, start the conversation
+          <div className="flex items-center justify-center h-full relative z-10">
+            <p className="text-yellow-400/50 text-sm font-mono">
+              {"//"} AWAITING_INPUT...
             </p>
           </div>
         )}
       </div>
 
-      <div className="p-4 border-t border-zinc-800 bg-zinc-900/30">
+      <div className="p-4 border-t-2 border-yellow-500/40 cyber-panel relative">
+        {/* Corner accents */}
+        <div className="absolute bottom-0 left-0 w-3 h-3 border-l-2 border-b-2 border-yellow-400"></div>
+        <div className="absolute bottom-0 right-0 w-3 h-3 border-r-2 border-b-2 border-cyan-400"></div>
+        {/* Hexagonal accent */}
+        <div className="absolute top-3 left-3 w-4 h-4 border border-yellow-400/20 rotate-45"></div>
+
         <div className="flex gap-2">
           <div className="flex-1 relative group">
-            <span className="absolute left-4 top-1/2 -translate-1/2 text-green-500 animate-pulse">
-              {">"}
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 neon-text-yellow font-mono text-sm">
+              {"//"}
             </span>
             <input
               ref={inputRef}
@@ -301,13 +317,13 @@ const Page = () => {
                   inputRef.current?.focus();
                 }
               }}
-              placeholder="Type message..."
+              placeholder="TRANSMIT_MESSAGE..."
               onChange={(e) => {
                 setInputMessage(e.target.value);
                 handleTyping();
               }}
               type="text"
-              className="w-full bg-black border border-zinc-800 focus:border-zinc-700 focus:outline-none transition-colors placeholder:text-zinc-700 py-3 pl-8 pr-4 text-sm"
+              className="w-full cyber-input py-3 pl-10 pr-4 text-sm font-mono placeholder:text-yellow-900 placeholder:font-mono placeholder:uppercase"
             />
           </div>
           <EmojiPicker
@@ -315,7 +331,7 @@ const Page = () => {
               setInputMessage((prev) => prev + emoji);
               inputRef.current?.focus();
             }}
-            buttonClassName="bg-zinc-800 px-3 h-full text-zinc-400 cursor-pointer"
+            buttonClassName="cyber-button px-3 h-full cursor-pointer font-mono"
           />
           <button
             onClick={() => {
@@ -323,7 +339,7 @@ const Page = () => {
               inputRef.current?.focus();
             }}
             disabled={!inputMessage.trim() || isPending}
-            className="bg-zinc-800 text-zinc-400 px-6 text-sm font-bold hover:text-zinc-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="cyber-button px-6 text-sm font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer font-mono"
           >
             SEND
           </button>
