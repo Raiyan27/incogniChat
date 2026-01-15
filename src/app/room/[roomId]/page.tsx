@@ -10,6 +10,16 @@ import { EmojiPicker } from "@/components/emoji-picker";
 import { MessageItem } from "@/components/message-item";
 import { useTypingIndicator } from "@/hooks/use-typing-indicator";
 import { TypingIndicatorList } from "@/components/typing-indicator";
+import type { Message } from "@/lib/realtime";
+import {
+  encryptMessage,
+  decryptMessage,
+  storeSecret,
+  getStoredSecret,
+  removeSecret,
+} from "@/lib/crypto";
+import { EncryptionSetup } from "@/components/encryption-setup";
+import { ConfirmModal } from "@/components/confirm-modal";
 
 const formatTimeRemaining = (seconds: number) => {
   const mins = Math.floor(seconds / 60)
@@ -17,6 +27,70 @@ const formatTimeRemaining = (seconds: number) => {
     .padStart(2, "0");
   const secs = (seconds % 60).toString().padStart(2, "0");
   return `${mins}:${secs}`;
+};
+
+// Component to handle async message decryption
+const DecryptedMessage = ({
+  message,
+  username,
+  roomId,
+  encryptionSecret,
+  isEncryptionEnabled,
+  onReact,
+  onMarkAsRead,
+  isLatestOwnMessage,
+  maxUsers,
+}: {
+  message: Message;
+  username: string;
+  roomId: string;
+  encryptionSecret: string | null;
+  isEncryptionEnabled: boolean;
+  onReact: (emoji: string) => void;
+  onMarkAsRead: (messageId: string) => void;
+  isLatestOwnMessage: boolean;
+  maxUsers: number;
+}) => {
+  const [displayText, setDisplayText] = useState(message.text);
+  const [isDecrypting, setIsDecrypting] = useState(false);
+
+  useEffect(() => {
+    const decrypt = async () => {
+      if (isEncryptionEnabled && encryptionSecret) {
+        setIsDecrypting(true);
+        try {
+          const decrypted = await decryptMessage(
+            message.text,
+            roomId,
+            encryptionSecret
+          );
+          setDisplayText(decrypted);
+        } catch {
+          setDisplayText("🔒 [Encrypted message - cannot decrypt]");
+        } finally {
+          setIsDecrypting(false);
+        }
+      } else {
+        setDisplayText(message.text);
+      }
+    };
+
+    decrypt();
+  }, [message.text, roomId, encryptionSecret, isEncryptionEnabled]);
+
+  return (
+    <MessageItem
+      message={{
+        ...message,
+        text: isDecrypting ? "⏳ Decrypting..." : displayText,
+      }}
+      username={username}
+      onReact={onReact}
+      onMarkAsRead={onMarkAsRead}
+      isLatestOwnMessage={isLatestOwnMessage}
+      maxUsers={maxUsers}
+    />
+  );
 };
 
 const Page = () => {
@@ -28,6 +102,19 @@ const Page = () => {
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [inputMessage, setInputMessage] = useState("");
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
+
+  // Initialize encryption state from sessionStorage
+  const [encryptionSecret, setEncryptionSecret] = useState<string | null>(() =>
+    getStoredSecret(roomId)
+  );
+  const [showEncryptionSetup, setShowEncryptionSetup] = useState(
+    () => !getStoredSecret(roomId)
+  );
+  const [isEncryptionEnabled, setIsEncryptionEnabled] = useState(
+    () => !!getStoredSecret(roomId)
+  );
+  const [showDisableConfirm, setShowDisableConfirm] = useState(false);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -100,8 +187,20 @@ const Page = () => {
 
   const { mutate: sendMessage, isPending } = useMutation({
     mutationFn: async ({ text }: { text: string }) => {
+      let messageText = text;
+
+      // Encrypt message if encryption is enabled
+      if (isEncryptionEnabled && encryptionSecret) {
+        try {
+          messageText = await encryptMessage(text, roomId, encryptionSecret);
+        } catch (error) {
+          console.error("Failed to encrypt message:", error);
+          // Still send unencrypted if encryption fails
+        }
+      }
+
       await api.messages.post(
-        { sender: username, text },
+        { sender: username, text: messageText },
         { query: { roomId } }
       );
       setInputMessage("");
@@ -174,6 +273,19 @@ const Page = () => {
     setTimeout(() => setCopyStatus("COPY"), 2000);
   };
 
+  const enableEncryption = (secret: string) => {
+    setEncryptionSecret(secret);
+    storeSecret(roomId, secret);
+    setIsEncryptionEnabled(true);
+    setShowEncryptionSetup(false);
+  };
+
+  const disableEncryption = () => {
+    removeSecret(roomId);
+    setEncryptionSecret(null);
+    setIsEncryptionEnabled(false);
+  };
+
   // Auto-scroll to bottom when messages or typing users change
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -235,6 +347,38 @@ const Page = () => {
               {roomInfo?.connectedCount ?? "-"}/{roomInfo?.maxUsers ?? "-"}
             </span>
           </div>
+
+          <div className="h-6 md:h-8 w-px bg-linear-to-b from-yellow-500/0 via-yellow-500/60 to-yellow-500/0" />
+
+          {/* Encryption Status Indicator */}
+          <button
+            onClick={() => {
+              if (isEncryptionEnabled) {
+                setShowDisableConfirm(true);
+              } else {
+                setShowEncryptionSetup(true);
+              }
+            }}
+            className="flex flex-col items-center group hover:scale-105 transition-transform cursor-pointer"
+            title={
+              isEncryptionEnabled
+                ? "Encryption enabled - Click to disable"
+                : "Encryption disabled - Click to enable"
+            }
+          >
+            <span className="text-[10px] md:text-xs text-yellow-400/80 uppercase font-mono tracking-widest">
+              {"//"} E2EE
+            </span>
+            <span
+              className={`text-xs md:text-sm font-bold font-mono flex items-center gap-1 ${
+                isEncryptionEnabled
+                  ? "text-green-400 neon-text-green"
+                  : "text-red-400/60"
+              }`}
+            >
+              {isEncryptionEnabled ? "🔒 ON" : "🔓 OFF"}
+            </span>
+          </button>
         </div>
 
         <button
@@ -266,10 +410,13 @@ const Page = () => {
                 index === messages.messages.length - 1;
 
               return (
-                <MessageItem
+                <DecryptedMessage
                   key={msg.id}
                   message={msg}
                   username={username}
+                  roomId={roomId}
+                  encryptionSecret={encryptionSecret}
+                  isEncryptionEnabled={isEncryptionEnabled}
                   onReact={(emoji) => addReaction({ messageId: msg.id, emoji })}
                   onMarkAsRead={(messageId) => markAsRead({ messageId })}
                   isLatestOwnMessage={isLatestOwnMessage}
@@ -345,6 +492,30 @@ const Page = () => {
           </button>
         </div>
       </div>
+
+      {/* Encryption Setup Modal */}
+      {showEncryptionSetup && (
+        <EncryptionSetup
+          onSetup={enableEncryption}
+          onSkip={() => setShowEncryptionSetup(false)}
+        />
+      )}
+
+      {/* Disable Encryption Confirmation Modal */}
+      {showDisableConfirm && (
+        <ConfirmModal
+          title="DISABLE E2EE"
+          message="Disable encryption? Messages will be sent in plain text."
+          confirmText="DISABLE"
+          cancelText="CANCEL"
+          isDanger={true}
+          onConfirm={() => {
+            disableEncryption();
+            setShowDisableConfirm(false);
+          }}
+          onCancel={() => setShowDisableConfirm(false)}
+        />
+      )}
     </main>
   );
 };
