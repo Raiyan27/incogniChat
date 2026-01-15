@@ -138,6 +138,11 @@ export const MessageReactions = ({
           reactions.map((reaction) => {
             const userReacted = reaction.users.includes(currentUsername);
             const count = reaction.users.length;
+            const usersDisplay = reaction.users
+              .map((user) =>
+                user === currentUsername ? `${user} (you)` : user
+              )
+              .join(", ");
 
             return (
               <button
@@ -148,7 +153,7 @@ export const MessageReactions = ({
                     ? "bg-blue-500/25 border border-blue-400/40 hover:bg-blue-500/35"
                     : "bg-zinc-800/70 border border-zinc-600/30 hover:bg-zinc-700/70"
                 }`}
-                title={reaction.users.join(", ")}
+                title={usersDisplay}
               >
                 <span className="text-sm">{reaction.emoji}</span>
                 <span
