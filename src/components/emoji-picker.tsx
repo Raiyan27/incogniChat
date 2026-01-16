@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Theme } from "emoji-picker-react";
 import type { EmojiClickData } from "emoji-picker-react";
 
@@ -24,20 +25,29 @@ export const EmojiPicker = ({
 }: EmojiPickerProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   // Close picker when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        pickerRef.current &&
-        !pickerRef.current.contains(event.target as Node)
-      ) {
+      const target = event.target as Node;
+      // Check if click is outside both the button container and the picker
+      const isOutsideButton =
+        pickerRef.current && !pickerRef.current.contains(target);
+      const isOutsidePicker = !(target as Element).closest?.(
+        ".EmojiPickerReact"
+      );
+
+      if (isOutsideButton && isOutsidePicker) {
         setIsOpen(false);
       }
     };
 
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
+      // Use setTimeout to avoid immediate close when opening
+      setTimeout(() => {
+        document.addEventListener("mousedown", handleClickOutside);
+      }, 0);
     }
 
     return () => {
@@ -70,6 +80,7 @@ export const EmojiPicker = ({
   return (
     <div className="relative" ref={pickerRef}>
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={`text-xl hover:bg-zinc-700 transition-transform ${buttonClassName}`}
@@ -78,33 +89,37 @@ export const EmojiPicker = ({
         😊
       </button>
 
-      {isOpen && (
-        <div
-          className={`absolute z-50 ${
-            pickerPosition === "top" ? "bottom-17" : "top-12"
-          } md:right-0 -right-15`}
-        >
-          <Picker
-            onEmojiClick={handleEmojiClick}
-            theme={Theme.DARK}
-            skinTonesDisabled
-            searchDisabled={false}
-            previewConfig={{
-              showPreview: true,
-            }}
-            height={400}
-            width={
-              typeof window !== "undefined"
-                ? window.innerWidth >= 768
-                  ? 400
-                  : window.innerWidth >= 412
-                  ? 300
+      {isOpen &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className={`fixed z-50 ${
+              pickerPosition === "top" ? "bottom-23" : "top-12"
+            }  right-10`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Picker
+              onEmojiClick={handleEmojiClick}
+              theme={Theme.DARK}
+              skinTonesDisabled
+              searchDisabled={false}
+              previewConfig={{
+                showPreview: true,
+              }}
+              height={400}
+              width={
+                typeof window !== "undefined"
+                  ? window.innerWidth >= 768
+                    ? 400
+                    : window.innerWidth >= 412
+                    ? 300
+                    : 300
                   : 300
-                : 300
-            }
-          />
-        </div>
-      )}
+              }
+            />
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

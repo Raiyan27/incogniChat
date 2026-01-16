@@ -124,7 +124,7 @@ const Lobby = () => {
                   max={10}
                   value={maxUsers}
                   onChange={(e) => setMaxUsers(Number(e.target.value))}
-                  className="flex-1 h-2 bg-black/70 border border-yellow-500/40 appearance-none cursor-pointer accent-yellow-400 touch-manipulation"
+                  className="flex-1 h-3 md:h-2 bg-black/70 border border-yellow-500/40 appearance-none cursor-pointer accent-yellow-400 touch-manipulation"
                   style={{
                     background: `linear-gradient(to right, rgba(252, 238, 10, 0.4) 0%, rgba(252, 238, 10, 0.4) ${
                       ((maxUsers - 2) / 8) * 100
@@ -154,7 +154,7 @@ const Lobby = () => {
 
             <button
               onClick={() => createRoom()}
-              className="w-full cyber-button p-3 text-sm font-bold uppercase tracking-widest mt-2 cursor-pointer disabled:opacity-50 touch-manipulation active:scale-[0.98] font-mono"
+              className="w-full cyber-button p-4 md:p-3 text-sm font-bold uppercase tracking-widest mt-2 cursor-pointer disabled:opacity-50 touch-manipulation active:scale-[0.98] transition-transform min-h-[48px] font-mono"
             >
               <span className="relative z-10">
                 {"//"} INITIALIZE_CONNECTION

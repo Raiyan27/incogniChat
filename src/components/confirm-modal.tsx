@@ -57,7 +57,7 @@ export const ConfirmModal = ({
         <div className="flex gap-3 justify-end">
           <button
             onClick={onCancel}
-            className="cyber-button px-4 py-2 text-sm font-bold uppercase tracking-wider font-mono hover:scale-105 transition-transform"
+            className="cyber-button px-5 py-3 md:px-4 md:py-2 min-h-[48px] md:min-h-0 text-sm font-bold uppercase tracking-wider font-mono hover:scale-105 transition-transform touch-manipulation active:scale-95"
           >
             {cancelText}
           </button>
@@ -65,7 +65,7 @@ export const ConfirmModal = ({
             onClick={onConfirm}
             className={`${
               isDanger ? "cyber-button-danger" : "cyber-button-primary"
-            } px-4 py-2 text-sm font-bold uppercase tracking-wider font-mono hover:scale-105 transition-transform`}
+            } px-5 py-3 md:px-4 md:py-2 min-h-[48px] md:min-h-0 text-sm font-bold uppercase tracking-wider font-mono hover:scale-105 transition-transform touch-manipulation active:scale-95`}
           >
             {confirmText}
           </button>

@@ -79,19 +79,19 @@ export const EncryptionSetup = ({ onSetup, onSkip }: EncryptionSetupProps) => {
                 value={secret}
                 onChange={(e) => setSecret(e.target.value)}
                 placeholder="Generate or enter secret key..."
-                className="flex-1 cyber-input p-3 text-sm font-mono placeholder:text-yellow-900 placeholder:font-mono"
+                className="flex-1 min-w-0 cyber-input p-3 text-sm font-mono placeholder:text-yellow-900 placeholder:font-mono"
               />
               <button
                 onClick={handleCopy}
                 disabled={!secret}
-                className="cyber-button px-3 text-xs font-mono disabled:opacity-50 disabled:cursor-not-allowed"
+                className="cyber-button px-3 text-xs font-mono disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
                 title="Copy key"
               >
                 {copyStatus === "COPIED!" ? "✓" : "📋"}
               </button>
               <button
                 onClick={() => setShowSecret(!showSecret)}
-                className="cyber-button px-3 text-xs font-mono"
+                className="cyber-button px-3 text-xs font-mono shrink-0"
                 title={showSecret ? "Hide" : "Show"}
               >
                 {showSecret ? "👁️" : "🔒"}
@@ -101,7 +101,7 @@ export const EncryptionSetup = ({ onSetup, onSkip }: EncryptionSetupProps) => {
 
           <button
             onClick={handleGenerate}
-            className="w-full cyber-button p-3 text-sm font-bold uppercase tracking-widest font-mono"
+            className="w-full cyber-button p-4 md:p-3 min-h-[48px] text-sm font-bold uppercase tracking-widest font-mono touch-manipulation active:scale-[0.98] transition-transform"
           >
             <span className="relative z-10">{"//"} GENERATE_RANDOM_KEY</span>
           </button>
@@ -118,13 +118,13 @@ export const EncryptionSetup = ({ onSetup, onSkip }: EncryptionSetupProps) => {
             <button
               onClick={handleSubmit}
               disabled={!isValidSecret(secret)}
-              className="flex-1 cyber-button p-3 text-sm font-bold uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed font-mono"
+              className="flex-1 cyber-button p-4 md:p-3 min-h-[48px] text-sm font-bold uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed font-mono touch-manipulation active:scale-[0.98] transition-transform"
             >
               ENABLE E2EE
             </button>
             <button
               onClick={onSkip}
-              className="flex-1 bg-black/50 border-2 border-cyan-400/30 p-3 text-sm font-bold uppercase tracking-widest text-cyan-400/60 hover:text-cyan-400 transition-colors font-mono"
+              className="flex-1 bg-black/50 border-2 border-cyan-400/30 p-4 md:p-3 min-h-[48px] text-sm font-bold uppercase tracking-widest text-cyan-400/60 hover:text-cyan-400 transition-colors font-mono touch-manipulation active:scale-[0.98]"
             >
               SKIP
             </button>

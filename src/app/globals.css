@@ -27,6 +27,24 @@ body {
   font-family: "Rajdhani", "Courier New", monospace;
   position: relative;
   overflow-x: hidden;
+  /* iOS Safari smooth scrolling */
+  -webkit-overflow-scrolling: touch;
+  /* Prevent text size adjust on orientation change */
+  -webkit-text-size-adjust: 100%;
+  /* Disable pull-to-refresh on mobile */
+  overscroll-behavior-y: contain;
+}
+
+/* Touch-friendly tap targets */
+* {
+  -webkit-tap-highlight-color: rgba(252, 238, 10, 0.1);
+}
+
+/* Improve touch scrolling momentum */
+.overflow-y-auto,
+.overflow-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 /* Cyberpunk grid background */
@@ -65,7 +83,7 @@ body::after {
     transparent 2px
   );
   pointer-events: none;
-  z-index: 9999;
+  z-index: 0;
   opacity: 0.3;
 }
 

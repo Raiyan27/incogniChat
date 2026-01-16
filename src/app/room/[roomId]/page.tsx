@@ -391,10 +391,6 @@ const Page = () => {
       </header>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin relative">
-        {/* Subtle grid overlay with CP2077 yellow accent */}
-        <div className="absolute inset-0 bg-linear-to-b from-yellow-500/5 via-transparent to-yellow-500/5 pointer-events-none"></div>
-        <div className="absolute top-0 left-0 w-full h-px bg-linear-to-r from-transparent via-yellow-500/30 to-transparent"></div>
-
         {messages?.messages.length === 0 ? (
           <div className="space-y-4">
             <TypingIndicatorList
@@ -434,7 +430,7 @@ const Page = () => {
           </>
         )}
         {messages?.messages.length === 0 && (
-          <div className="flex items-center justify-center h-full relative z-10">
+          <div className="absolute inset-0 flex items-center justify-center">
             <p className="text-yellow-400/50 text-sm font-mono">
               {"//"} AWAITING_INPUT...
             </p>
@@ -451,7 +447,7 @@ const Page = () => {
 
         <div className="flex gap-2">
           <div className="flex-1 relative group">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 neon-text-yellow font-mono text-sm">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 neon-text-yellow font-mono text-sm pointer-events-none">
               {"//"}
             </span>
             <input
@@ -460,9 +456,23 @@ const Page = () => {
               value={inputMessage}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && inputMessage.trim()) {
+                  e.preventDefault();
                   sendMessage({ text: inputMessage });
-                  inputRef.current?.focus();
+                  // Scroll to bottom after sending
+                  setTimeout(() => {
+                    messagesEndRef.current?.scrollIntoView({
+                      behavior: "smooth",
+                    });
+                  }, 100);
                 }
+              }}
+              onFocus={() => {
+                // Scroll to bottom when keyboard opens
+                setTimeout(() => {
+                  messagesEndRef.current?.scrollIntoView({
+                    behavior: "smooth",
+                  });
+                }, 300);
               }}
               placeholder="TRANSMIT_MESSAGE..."
               onChange={(e) => {
@@ -470,7 +480,9 @@ const Page = () => {
                 handleTyping();
               }}
               type="text"
-              className="w-full cyber-input py-3 pl-10 pr-4 text-sm font-mono placeholder:text-yellow-900 placeholder:font-mono placeholder:uppercase"
+              inputMode="text"
+              enterKeyHint="send"
+              className="w-full cyber-input py-3 md:py-3 pl-10 pr-4 text-sm md:text-sm font-mono placeholder:text-yellow-900 placeholder:font-mono placeholder:uppercase min-h-[44px] touch-manipulation"
             />
           </div>
           <EmojiPicker
@@ -478,15 +490,18 @@ const Page = () => {
               setInputMessage((prev) => prev + emoji);
               inputRef.current?.focus();
             }}
-            buttonClassName="cyber-button px-3 h-full cursor-pointer font-mono"
+            buttonClassName="cyber-button px-3 md:px-3 min-w-[44px] min-h-[44px] h-full cursor-pointer font-mono touch-manipulation flex items-center justify-center"
           />
           <button
             onClick={() => {
               sendMessage({ text: inputMessage });
-              inputRef.current?.focus();
+              // Scroll to bottom after sending
+              setTimeout(() => {
+                messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+              }, 100);
             }}
             disabled={!inputMessage.trim() || isPending}
-            className="cyber-button px-6 text-sm font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer font-mono"
+            className="cyber-button px-4 md:px-6 min-w-[44px] min-h-[44px] text-sm font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer font-mono touch-manipulation"
           >
             SEND
           </button>
