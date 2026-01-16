@@ -227,12 +227,14 @@ export const MessageReactions = ({
               onEmojiClick={handleEmojiClick}
               theme={Theme.DARK}
               skinTonesDisabled
-              searchDisabled={false}
+              searchDisabled={
+                typeof window !== "undefined" ? window.innerWidth < 768 : false
+              }
               previewConfig={{
                 showPreview: false,
               }}
               width={320}
-              height={400}
+              height={350}
             />
           </div>
         </>

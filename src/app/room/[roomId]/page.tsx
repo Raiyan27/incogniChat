@@ -309,6 +309,61 @@ const Page = () => {
     }
   }, [viewport.height]);
 
+  // Check if room is still initializing
+  const isInitializing = !roomInfo || !ttlData || !messages;
+
+  if (isInitializing) {
+    return (
+      <main
+        className="flex flex-col h-dvh max-h-dvh overflow-hidden relative z-10 bg-gradient-to-br from-black via-gray-900 to-black"
+        style={{ height: "var(--viewport-height)" }}
+      >
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center space-y-6">
+            {/* Cyberpunk loading animation */}
+            <div className="relative">
+              <div className="w-16 h-16 border-2 border-yellow-400/30 border-t-yellow-400 rounded-full animate-spin mx-auto"></div>
+              <div
+                className="absolute inset-0 w-16 h-16 border-2 border-cyan-400/20 border-b-cyan-400 rounded-full animate-spin mx-auto"
+                style={{
+                  animationDirection: "reverse",
+                  animationDuration: "1.5s",
+                }}
+              ></div>
+            </div>
+
+            {/* Loading text with cyberpunk styling */}
+            <div className="space-y-2">
+              <h2 className="text-xl md:text-2xl font-bold neon-text-yellow font-mono tracking-wider">
+                INITIALIZING ROOM
+              </h2>
+              <p className="text-yellow-400/70 text-sm md:text-base font-mono">
+                {"//"} CONNECTING_TO_MATRIX...
+              </p>
+              <div className="flex justify-center space-x-1">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                <div
+                  className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"
+                  style={{ animationDelay: "0.2s" }}
+                ></div>
+                <div
+                  className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"
+                  style={{ animationDelay: "0.4s" }}
+                ></div>
+              </div>
+            </div>
+
+            {/* Corner accents */}
+            <div className="absolute top-8 left-8 w-4 h-4 border-l-2 border-t-2 border-yellow-400/50"></div>
+            <div className="absolute top-8 right-8 w-4 h-4 border-r-2 border-t-2 border-cyan-400/50"></div>
+            <div className="absolute bottom-8 left-8 w-4 h-4 border-l-2 border-b-2 border-cyan-400/50"></div>
+            <div className="absolute bottom-8 right-8 w-4 h-4 border-r-2 border-b-2 border-yellow-400/50"></div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main
       className="flex flex-col h-dvh max-h-dvh overflow-hidden relative z-10"

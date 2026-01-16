@@ -154,7 +154,7 @@ const Lobby = () => {
 
             <button
               onClick={() => createRoom()}
-              className="w-full cyber-button p-4 md:p-3 text-sm font-bold uppercase tracking-widest mt-2 cursor-pointer disabled:opacity-50 touch-manipulation active:scale-[0.98] transition-transform min-h-[48px] font-mono"
+              className="w-full cyber-button p-4 md:p-3 text-sm font-bold uppercase tracking-widest mt-2 cursor-pointer disabled:opacity-50 touch-manipulation active:scale-[0.98] transition-transform min-h-12 font-mono"
             >
               <span className="relative z-10">
                 {"//"} INITIALIZE_CONNECTION
