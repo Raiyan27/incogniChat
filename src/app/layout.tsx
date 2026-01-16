@@ -22,6 +22,9 @@ export const metadata: Metadata = {
   description:
     "Privacy-first, self-destructing chatrooms with end-to-end encryption. No signup required.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/favicon.webp",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
