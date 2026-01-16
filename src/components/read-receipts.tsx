@@ -87,9 +87,9 @@ export const ReadReceipts = ({
 
       {/* Extended details - show when hovered/clicked */}
       {hasBeenRead && showDetails && (
-        <div className="absolute right-0 bottom-full mb-1 z-50 bg-zinc-800/95 backdrop-blur-md border border-zinc-600/40 rounded-lg px-3 py-2 shadow-xl animate-in fade-in zoom-in-95 duration-150 min-w-35 whitespace-nowrap">
-          <div className="flex flex-col gap-2">
-            <span className="text-[10px] text-zinc-400 font-medium">
+        <div className="absolute right-0 bottom-full mb-1 z-50 bg-zinc-800/95 backdrop-blur-md border border-zinc-600/40 rounded-lg px-3 py-2 shadow-xl animate-in fade-in zoom-in-95 duration-150 min-w-35 whitespace-nowrap ">
+          <div className="flex flex-col gap-2 ">
+            <span className="text-[10px] text-zinc-400 font-medium ">
               Seen by {otherReaders.length}{" "}
               {otherReaders.length === 1 ? "person" : "people"}
             </span>

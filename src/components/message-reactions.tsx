@@ -122,7 +122,7 @@ export const MessageReactions = ({
   return (
     <div
       ref={containerRef}
-      className={`relative transition-all duration-200 ${
+      className={`relative transition-all duration-200 z-10 ${
         shouldShowSpace ? "mt-1" : "mt-0"
       } ${isOwnMessage ? "flex justify-end" : ""}`}
       onMouseEnter={() => !showQuickPicker && setShowHoverHint(true)}
@@ -175,7 +175,7 @@ export const MessageReactions = ({
               showHoverHint
                 ? "border-zinc-500/50 bg-zinc-700/60 opacity-100 scale-100"
                 : "border-zinc-700/30 bg-zinc-800/40 opacity-0 group-hover:opacity-70 scale-95"
-            } hover:opacity-100 hover:border-zinc-500/50 hover:bg-zinc-700/60 hover:scale-100 active:scale-90`}
+            } cursor-pointer hover:opacity-100 hover:border-zinc-500/50 hover:bg-zinc-700/60 hover:scale-100 active:scale-90`}
             title="Click to add reaction"
             aria-label="Add reaction"
           >
@@ -187,7 +187,7 @@ export const MessageReactions = ({
         {showQuickPicker && (
           <div
             ref={quickPickerRef}
-            className="flex items-center gap-0.5 bg-zinc-800/95 backdrop-blur-md border border-zinc-600/40 rounded-full px-2 py-1.5 shadow-2xl animate-in fade-in zoom-in-95 duration-150"
+            className="flex items-center gap-0.5 bg-zinc-800/95 backdrop-blur-md border border-zinc-600/40 rounded-full px-2 py-1.5 shadow-2xl animate-in fade-in zoom-in-95 duration-150 "
           >
             {QUICK_EMOJIS.map((emoji) => (
               <button
@@ -196,7 +196,7 @@ export const MessageReactions = ({
                   onReact(emoji);
                   setShowQuickPicker(false);
                 }}
-                className="hover:scale-125 hover:bg-zinc-700/50 rounded-full transition-all text-lg w-8 h-8 flex items-center justify-center touch-manipulation active:scale-110"
+                className="hover:scale-125 hover:bg-zinc-700/50 rounded-full transition-all text-lg w-8 h-8 flex items-center justify-center touch-manipulation active:scale-110 cursor-pointer"
                 title={`React with ${emoji}`}
               >
                 {emoji}
@@ -209,7 +209,7 @@ export const MessageReactions = ({
               onClick={() => {
                 setShowFullPicker(!showFullPicker);
               }}
-              className="hover:scale-110 hover:bg-zinc-700/50 rounded-full transition-all text-sm w-8 h-8 flex items-center justify-center touch-manipulation active:scale-105"
+              className="hover:scale-110 hover:bg-zinc-700/50 rounded-full transition-all text-sm w-8 h-8 flex items-center justify-center touch-manipulation active:scale-105 cursor-pointer"
               title="More reactions"
             >
               ➕

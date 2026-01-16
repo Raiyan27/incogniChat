@@ -20,6 +20,8 @@ import {
 } from "@/lib/crypto";
 import { EncryptionSetup } from "@/components/encryption-setup";
 import { ConfirmModal } from "@/components/confirm-modal";
+import { useViewport } from "@/hooks/use-viewport";
+import { useKeyboardInputHandler } from "@/hooks/use-keyboard-input";
 
 const formatTimeRemaining = (seconds: number) => {
   const mins = Math.floor(seconds / 60)
@@ -102,6 +104,10 @@ const Page = () => {
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [inputMessage, setInputMessage] = useState("");
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
+
+  // Mobile viewport and keyboard handling
+  const viewport = useViewport();
+  const { handleInputFocus, handleInputBlur } = useKeyboardInputHandler();
 
   // Initialize encryption state from sessionStorage
   const [encryptionSecret, setEncryptionSecret] = useState<string | null>(() =>
@@ -293,8 +299,21 @@ const Page = () => {
     }
   }, [messages?.messages.length, typingUsers.length]);
 
+  // Update CSS variable for dynamic viewport height
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      document.documentElement.style.setProperty(
+        "--viewport-height",
+        `${viewport.height}px`
+      );
+    }
+  }, [viewport.height]);
+
   return (
-    <main className="flex flex-col h-screen max-h-screen overflow-hidden relative z-10">
+    <main
+      className="flex flex-col h-dvh max-h-dvh overflow-hidden relative z-10"
+      style={{ height: "var(--viewport-height)" }}
+    >
       <header className="cyber-panel border-b-2 border-yellow-500/40 p-3 md:p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-0 relative">
         {/* Corner accents - CP2077 style */}
         <div className="absolute top-0 left-0 w-3 h-3 border-l-2 border-t-2 border-yellow-400"></div>
@@ -313,7 +332,7 @@ const Page = () => {
               </span>
               <button
                 onClick={copyLink}
-                className="text-[9px] md:text-[10px] cyber-input hover:neon-border-yellow px-1.5 md:px-2 py-0.5 text-yellow-400 hover:text-yellow-300 transition-all whitespace-nowrap font-mono uppercase tracking-wide"
+                className="text-[9px] md:text-[10px] cyber-input hover:neon-border-yellow px-1.5 md:px-2 py-0.5 text-yellow-400 hover:text-yellow-300 transition-all whitespace-nowrap font-mono uppercase tracking-wide cursor-pointer"
               >
                 {copyStatus}
               </button>
@@ -383,9 +402,9 @@ const Page = () => {
 
         <button
           onClick={() => destroyRoom()}
-          className="text-[10px] md:text-xs cyber-button cyber-button-danger px-2.5 md:px-3 py-1 md:py-1.5 font-bold uppercase tracking-wider group flex items-center gap-1.5 md:gap-2 disabled:opacity-50 md:w-auto justify-center ml-auto font-mono"
+          className="text-[10px] md:text-xs cyber-button cyber-button-danger px-2.5 md:px-3 py-1 md:py-1.5 font-bold uppercase tracking-wider group flex items-center gap-1.5 cursor-pointer md:gap-2 disabled:opacity-50 md:w-auto justify-center ml-auto font-mono"
         >
-          <span className="group-hover:animate-pulse">⚠</span>
+          <span className="group-hover:animate-pulse ">⚠</span>
           TERMINATE
         </button>
       </header>
@@ -468,12 +487,14 @@ const Page = () => {
               }}
               onFocus={() => {
                 // Scroll to bottom when keyboard opens
+                handleInputFocus();
                 setTimeout(() => {
                   messagesEndRef.current?.scrollIntoView({
                     behavior: "smooth",
                   });
                 }, 300);
               }}
+              onBlur={handleInputBlur}
               placeholder="TRANSMIT_MESSAGE..."
               onChange={(e) => {
                 setInputMessage(e.target.value);
@@ -482,7 +503,9 @@ const Page = () => {
               type="text"
               inputMode="text"
               enterKeyHint="send"
-              className="w-full cyber-input py-3 md:py-3 pl-10 pr-4 text-sm md:text-sm font-mono placeholder:text-yellow-900 placeholder:font-mono placeholder:uppercase min-h-[44px] touch-manipulation"
+              className="w-full cyber-input py-3 md:py-3 pl-10 pr-4 text-sm md:text-sm font-mono placeholder:text-yellow-900 placeholder:font-mono placeholder:uppercase min-h-11 touch-manipulation"
+              /* Prevent zoom on iOS by using 16px font size on focus */
+              style={{ fontSize: "16px" }}
             />
           </div>
           <EmojiPicker
@@ -501,7 +524,7 @@ const Page = () => {
               }, 100);
             }}
             disabled={!inputMessage.trim() || isPending}
-            className="cyber-button px-4 md:px-6 min-w-[44px] min-h-[44px] text-sm font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer font-mono touch-manipulation"
+            className="cyber-button px-4 md:px-6 min-w-11 min-h-11 text-sm font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer font-mono touch-manipulation"
           >
             SEND
           </button>

@@ -102,7 +102,9 @@ export const EmojiPicker = ({
               onEmojiClick={handleEmojiClick}
               theme={Theme.DARK}
               skinTonesDisabled
-              searchDisabled={false}
+              searchDisabled={
+                typeof window !== "undefined" ? window.innerWidth < 768 : false
+              }
               previewConfig={{
                 showPreview: true,
               }}
